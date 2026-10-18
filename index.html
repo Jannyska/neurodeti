@@ -217,17 +217,11 @@ function showPanel(level){
 const panel=document.getElementById("panel");
 const title=document.getElementById("panelTitle");
 const body=document.getElementById("panelBody");
-const list=checkedList();
 panel.classList.toggle("red",level>=8);
-title.textContent=level>=8?"Řekni si ihned o hospitaci":"Přesahuje to běžnou lekci";
-let h="<ul>"+list.map(function(t){return "<li>"+esc(t)+"</li>";}).join("")+"</ul>";
-if(level>=8){
-h+='<p class="rec">Řekni si ihned o hospitaci a neřeš to sám/sama na place. Ozvi se Toni nebo Ondrovi.</p>';
-h+='<a class="tel" href="tel:+420602339999">Piš Toni 602 339 999</a>';
-}else{
-h+='<p class="rec">Ozvi se Toni nebo Ondrovi a řeš to s nimi — neřeš to sám/sama na place.</p>';
-}
-body.innerHTML=h;
+title.textContent="Řekni si o hospitaci";
+body.innerHTML='<p class="rec">Piš Toni, nebo Ondrovi.</p>'
++'<a class="tel" href="tel:+420602339999">Toni 602 339 999</a> '
++'<a class="tel" href="tel:+420777867190">Ondra 777 867 190</a>';
 panel.classList.add("show");
 }
 function hidePanel(){document.getElementById("panel").classList.remove("show");}
