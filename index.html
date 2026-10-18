@@ -1,0 +1,295 @@
+<!DOCTYPE html>
+<html lang="cs">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#1f6feb">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="Checklist lektora">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
+<link rel="manifest" id="manifestLink">
+<link rel="apple-touch-icon" id="appleIcon">
+<title>Checklist lektora</title>
+<style>
+:root{
+--bg:#f5f6f8;--card:#ffffff;--fg:#14181f;--muted:#5b6675;
+--line:#dfe3e9;--accent:#1f6feb;--warn:#b26a00;--warnbg:#fff4e0;
+--red:#b42318;--redbg:#fdecec;--ok:#1a7f37;
+}
+@media (prefers-color-scheme:dark){
+:root{--bg:#0d1117;--card:#161b22;--fg:#e6edf3;--muted:#9aa7b4;
+--line:#2d333b;--accent:#4c8dff;--warn:#f0b95e;--warnbg:#3a2c10;
+--red:#ff8a80;--redbg:#3a1a17;--ok:#5ddc86;}
+}
+*{box-sizing:border-box}
+html,body{margin:0;padding:0}
+body{background:var(--bg);color:var(--fg);
+font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Arial,sans-serif;
+font-size:16px;line-height:1.4;-webkit-text-size-adjust:100%}
+.wrap{max-width:640px;margin:0 auto;padding:0 12px 40px}
+header.top{position:sticky;top:0;z-index:20;background:var(--card);
+border-bottom:1px solid var(--line);padding:10px 12px;
+padding-top:calc(10px + env(safe-area-inset-top))}
+header.top .inner{max-width:640px;margin:0 auto;display:flex;
+align-items:center;justify-content:space-between;gap:10px}
+header.top h1{font-size:17px;margin:0;font-weight:700}
+.count{font-variant-numeric:tabular-nums;font-weight:700;font-size:15px;
+background:var(--bg);border:1px solid var(--line);border-radius:999px;
+padding:5px 12px;white-space:nowrap}
+.statusbar{margin-top:8px;border-radius:10px;padding:8px 12px;font-size:13px;
+font-weight:600;cursor:pointer;border:1px solid var(--line);
+background:var(--bg);max-width:640px;margin-left:auto;margin-right:auto}
+.statusbar.ok{color:var(--ok)}
+.statusbar.warn{background:var(--warnbg);border-color:var(--warn);color:var(--warn)}
+.statusbar.red{background:var(--redbg);border-color:var(--red);color:var(--red)}
+section.card{background:var(--card);border:1px solid var(--line);
+border-radius:14px;margin-top:14px;overflow:hidden}
+section.card>h2{font-size:15px;margin:0;padding:12px 14px;border-bottom:1px solid var(--line)}
+.note{font-size:12px;color:var(--muted);padding:8px 14px;border-bottom:1px solid var(--line);font-style:italic}
+label.row{display:flex;align-items:flex-start;gap:12px;min-height:44px;
+padding:12px 14px;border-bottom:1px solid var(--line);cursor:pointer}
+label.row:last-child{border-bottom:0}
+label.row input{width:24px;height:24px;margin:2px 0 0;flex:0 0 auto;accent-color:var(--accent)}
+label.row span{font-size:15px}
+label.row.on{background:var(--bg)}
+.fields{display:flex;flex-direction:column;gap:10px;padding:14px}
+.fields label{font-size:13px;color:var(--muted);font-weight:600}
+.fields input{font-size:16px;padding:11px 12px;border-radius:10px;
+border:1px solid var(--line);background:var(--bg);color:var(--fg);width:100%}
+button{font-family:inherit;font-size:15px;font-weight:600;border-radius:11px;
+border:1px solid var(--line);background:var(--card);color:var(--fg);
+padding:12px 14px;cursor:pointer}
+button.primary{background:var(--accent);border-color:var(--accent);color:#fff}
+button.danger{color:var(--red);border-color:var(--red)}
+button.block{width:100%;min-height:44px}
+.btns{display:flex;flex-direction:column;gap:10px;padding:0 14px 14px}
+.panel{position:fixed;left:0;right:0;bottom:0;z-index:40;
+background:var(--card);border-top:3px solid var(--warn);
+border-radius:16px 16px 0 0;box-shadow:0 -8px 30px rgba(0,0,0,.25);
+max-height:78vh;overflow:auto;padding:16px 16px calc(16px + env(safe-area-inset-bottom));
+transform:translateY(110%);transition:transform .25s ease}
+.panel.show{transform:translateY(0)}
+.panel.red{border-top-color:var(--red);background:var(--redbg)}
+.panel h3{margin:0 0 10px;font-size:18px}
+.panel.red h3{color:var(--red)}
+.panel ul{margin:8px 0;padding-left:20px;font-size:14px}
+.panel .rec{font-size:14px;font-weight:600;margin:12px 0}
+.panel a.tel{display:inline-block;margin-top:6px;background:var(--red);
+color:#fff;text-decoration:none;padding:12px 14px;border-radius:11px;font-weight:700}
+.panel .close{position:absolute;top:12px;right:12px;border:0;background:transparent;
+font-size:18px;padding:6px 10px;color:var(--muted)}
+.hist{margin-top:14px;background:var(--card);border:1px solid var(--line);border-radius:14px;overflow:hidden}
+.hist>h2{font-size:15px;margin:0;padding:12px 14px;border-bottom:1px solid var(--line)}
+.hist .empty{padding:14px;color:var(--muted);font-size:14px}
+.rec-item{border-bottom:1px solid var(--line)}
+.rec-item .head{display:flex;align-items:center;gap:10px;padding:12px 14px;cursor:pointer;min-height:44px}
+.rec-item .head b{font-weight:700}
+.rec-item .head .meta{font-size:13px;color:var(--muted);flex:1;min-width:0}
+.rec-item .head .n{font-weight:700;font-variant-numeric:tabular-nums}
+.rec-item .detail{display:none;padding:0 14px 12px;font-size:13px;color:var(--muted)}
+.rec-item.open .detail{display:block}
+.rec-item .detail ul{margin:6px 0 10px;padding-left:18px}
+footer{max-width:640px;margin:20px auto 0;padding:0 4px;text-align:center;
+font-size:12px;color:var(--muted)}
+.sr{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0)}
+</style>
+</head>
+<body>
+<header class="top">
+<div class="inner">
+<h1>Checklist lektora</h1>
+<span class="count" id="total">0 / 27</span>
+</div>
+<div class="statusbar ok" id="statusbar" role="button" tabindex="0">Zatím bez varovných signálů.</div>
+</header>
+<div class="wrap" id="app"></div>
+<div class="panel" id="panel" role="dialog" aria-modal="true" aria-labelledby="panelTitle">
+<button class="close" id="panelClose" aria-label="Zavřít">✕</button>
+<h3 id="panelTitle"></h3>
+<div id="panelBody"></div>
+</div>
+<footer>data zůstávají jen v tomto zařízení</footer>
+<script>
+"use strict";
+const SECTIONS=[
+{key:"lektori",heading:"Lektoři",note:"týká se tebe jako lektora",items:[
+"Pokud si všimnu na první lekci, že dítě má očividné specifikum (neslyšící, nemluví, pohybový problém, PAS...), o kterém mi rodiče neřekli dopředu, ozvu se Toni nebo Ondrovi",
+"Ne vždy se jako lektoři shodneme, jak to řešit",
+"Jeden lektor musí být pořád s dítětem a na skupinu zbude jen jeden",
+"Před lekcí si říkám, doufám, že tam konkrétní dítě nebude / po lekci mám radost, že tam dítě nepřišlo",
+"Pokračuju v lekcích, jako by se nic nedělo, protože „musím“ a očekává se to ode mě"
+]},
+{key:"chovani",heading:"Chování dítěte",items:[
+"Neguje všechno, co řekne lektorstvo",
+"Diskutuje o všem, co řekne lektorstvo",
+"Odchází během lekce do šatny",
+"Nemá žádný pud sebezáchovy („skočí dolů z duchen“, aniž by pod nimi byla žíněnka)",
+"Nevydrží v kolečku (musí se hýbat, musí mluvit pořád i přes vyzvání, že není na řadě)",
+"Pořád běhá (i o pauzách)",
+"Všimnu si, že se uklidňuje opakujícím se pohybem, nebo se jinak stimuluje",
+"Nechce se zapojovat do aktivit, furt chce sedět na žíněnce",
+"Neustále pláče",
+"Náhodně křičí",
+"Schovává se neustále za žíněnky",
+"Mentálně se odpojuje (působí, jako kdyby bylo na jiné planetě), nevnímá/neslyší, co mu říkám, nebo nemám jistotu, že to tak je",
+"Ubližuje ostatním dětem (vědomě i nevědomě)",
+"Ubližuje fyzicky lektorovi",
+"Napadá lektora",
+"Mluví velmi často sprostě",
+"Dělá věci, aby na sebe upozornil/a",
+"Nezvládá to, co zbytek kolektivu, zpomaluje skupinu"
+]},
+{key:"kolektiv",heading:"Kolektiv",items:[
+"Ostatní děti s ním/ni nechtějí být ve dvojici",
+"Ostatní děti se jí/jemu smějí a začínám si všímat projevů šikany",
+"Ostatní děti si začínají všímat, že je něco jinak a komentují to",
+"Když nedorazí, lekce je výrazně jiná/funkčnější"
+]}
+];
+const TOTAL_ITEMS=SECTIONS.reduce(function(a,s){return a+s.items.length;},0);
+const KEY_STATE="lektor_checklist_state_v1";
+const KEY_HIST="lektor_checklist_history_v1";
+function lsGet(k,def){try{const v=localStorage.getItem(k);return v?JSON.parse(v):def;}catch(e){return def;}}
+function lsSet(k,v){try{localStorage.setItem(k,JSON.stringify(v));return true;}catch(e){return false;}}
+function lsDel(k){try{localStorage.removeItem(k);}catch(e){}}
+let state=lsGet(KEY_STATE,null)||{name:"",date:"",checked:{}};
+function todayISO(){const d=new Date();const m=String(d.getMonth()+1).padStart(2,"0");
+const y=String(d.getDate()).padStart(2,"0");return d.getFullYear()+"-"+m+"-"+y;}
+if(!state.date)state.date=todayISO();
+function iconData(){return "data:image/svg+xml,"+encodeURIComponent(
+"<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 192 192'><rect width='192' height='192' rx='36' fill='#1f6feb'/><path d='M50 100l30 30 60-65' fill='none' stroke='#fff' stroke-width='16' stroke-linecap='round' stroke-linejoin='round'/></svg>");}
+(function setupPWA(){
+try{
+const m={name:"Checklist lektora",short_name:"Checklist lektora",start_url:".",display:"standalone",theme_color:"#1f6feb",background_color:"#0d1117",icons:[{src:iconData(),sizes:"192x192",type:"image/svg+xml",purpose:"any"}]};
+const link=document.getElementById("manifestLink");
+if(link)link.href="data:application/manifest+json,"+encodeURIComponent(JSON.stringify(m));
+const ai=document.getElementById("appleIcon");if(ai)ai.href=iconData();
+}catch(e){}
+})();
+function itemId(sk,i){return sk+":"+i;}
+function checkedList(){const out=[];SECTIONS.forEach(function(s){s.items.forEach(function(t,i){
+if(state.checked[itemId(s.key,i)])out.push(t);});});return out;}
+function countChecked(){return checkedList().length;}
+function render(){
+const app=document.getElementById("app");
+let html='<section class="card"><div class="fields">'+
+'<label>Jméno / označení dítěte<input id="nameIn" type="text" autocomplete="off" value="'+
+(esc(state.name))+'"></label>'+
+'<label>Datum lekce<input id="dateIn" type="date" value="'+esc(state.date)+'"></label>'+
+'</div></section>';
+SECTIONS.forEach(function(s){
+html+='<section class="card"><h2>'+esc(s.heading)+'</h2>';
+if(s.note)html+='<div class="note">'+esc(s.note)+'</div>';
+s.items.forEach(function(t,i){const id=itemId(s.key,i);const on=state.checked[id]?" checked":"";
+html+='<label class="row'+(on?' on':'')+'"><input type="checkbox" data-id="'+id+'"'+on+'><span>'+esc(t)+'</span></label>';});
+html+='</section>';});
+html+='<section class="card"><div class="btns" style="padding-top:14px">'+
+'<button class="primary block" id="saveBtn">Uložit vyhodnocení</button>'+
+'<button class="block" id="newBtn">Nové vyhodnocení</button></div></section>'+
+'<div id="hist"></div>';
+app.innerHTML=html;
+document.getElementById("nameIn").addEventListener("input",function(e){state.name=e.target.value;lsSet(KEY_STATE,state);});
+document.getElementById("dateIn").addEventListener("input",function(e){state.date=e.target.value;lsSet(KEY_STATE,state);});
+app.addEventListener("change",onToggle);
+document.getElementById("saveBtn").addEventListener("click",saveRecord);
+document.getElementById("newBtn").addEventListener("click",newEvaluation);
+updateUI();
+}
+function esc(s){return String(s==null?"":s).replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;").replace(/"/g,"&quot;");}
+function onToggle(e){const t=e.target;if(!t||!t.dataset||t.dataset.id==null)return;
+const id=t.dataset.id;
+if(t.checked)state.checked[id]=1;else delete state.checked[id];
+const row=t.closest("label.row");if(row)row.classList.toggle("on",!!t.checked);
+lsSet(KEY_STATE,state);updateUI(true);}
+function updateUI(isChange){
+const n=countChecked();
+document.getElementById("total").textContent=n+" / "+TOTAL_ITEMS;
+const bar=document.getElementById("statusbar");
+bar.classList.remove("ok","warn","red");
+if(n>=8){bar.classList.add("red");bar.textContent="8+ signálů — ihned si řekni o hospitaci. Klepni pro detail.";}
+else if(n>=5){bar.classList.add("warn");bar.textContent="5+ signálů — ozvi se Toni nebo Ondrovi. Klepni pro detail.";}
+else{bar.classList.add("ok");bar.textContent=n===0?"Zatím bez varovných signálů.":(n+" signálů — zatím v běžné míře.");}
+if(isChange){
+if(n>=8&&!state.a8){state.a8=1;lsSet(KEY_STATE,state);showPanel(8);}
+else if(n>=5&&!state.a5){state.a5=1;lsSet(KEY_STATE,state);showPanel(5);}
+}
+}
+function showPanel(level){
+const panel=document.getElementById("panel");
+const title=document.getElementById("panelTitle");
+const body=document.getElementById("panelBody");
+const list=checkedList();
+panel.classList.toggle("red",level>=8);
+title.textContent=level>=8?"Řekni si ihned o hospitaci":"Přesahuje to běžnou lekci";
+let h="<ul>"+list.map(function(t){return "<li>"+esc(t)+"</li>";}).join("")+"</ul>";
+if(level>=8){
+h+='<p class="rec">Řekni si ihned o hospitaci a neřeš to sám/sama na place. Ozvi se Toni nebo Ondrovi.</p>';
+h+='<a class="tel" href="tel:+420602339999">Piš Toni 602 339 999</a>';
+}else{
+h+='<p class="rec">Ozvi se Toni nebo Ondrovi a řeš to s nimi — neřeš to sám/sama na place.</p>';
+}
+body.innerHTML=h;
+panel.classList.add("show");
+}
+function hidePanel(){document.getElementById("panel").classList.remove("show");}
+
+function fmtDate(s){if(!s)return "—";const p=s.split("-");return p.length===3?(p[2]+"."+p[1]+"."+p[0]):s;}
+function saveRecord(){
+const items=checkedList();
+const rec={name:state.name||"",date:state.date||todayISO(),count:items.length,
+items:items,ts:new Date().toISOString()};
+const hist=lsGet(KEY_HIST,[]);
+hist.unshift(rec);
+lsSet(KEY_HIST,hist);
+renderHistory();
+document.getElementById("saveBtn").textContent="Uloženo ✓";
+setTimeout(function(){const b=document.getElementById("saveBtn");if(b)b.textContent="Uložit vyhodnocení";},1500);
+}
+function newEvaluation(){
+if(!window.confirm("Opravdu začít nové vyhodnocení? Všechna zaškrtnutí se zruší."))return;
+state.checked={};state.a5=0;state.a8=0;
+lsSet(KEY_STATE,state);
+document.querySelectorAll('#app input[type=checkbox]').forEach(function(c){c.checked=false;const r=c.closest("label.row");if(r)r.classList.remove("on");});
+hidePanel();updateUI(false);
+}
+function renderHistory(){
+const box=document.getElementById("hist");if(!box)return;
+const hist=lsGet(KEY_HIST,[]);
+let h='<section class="hist"><h2>Historie vyhodnocení</h2>';
+if(!hist.length){h+='<div class="empty">Zatím žádný uložený záznam.</div></section>';
+box.innerHTML=h;return;}
+hist.forEach(function(r,idx){
+h+='<div class="rec-item" data-idx="'+idx+'"><div class="head" data-act="toggle">'+
+'<span class="meta"><b>'+esc(fmtDate(r.date))+'</b> · '+esc(r.name||"(bez jména)")+'</span>'+
+'<span class="n">'+r.count+' / '+TOTAL_ITEMS+'</span></div>'+
+'<div class="detail"><ul>'+(r.items.length?r.items.map(function(t){return "<li>"+esc(t)+"</li>";}).join(""):"<li>žádné zaškrtnuté body</li>")+'</ul>'+
+'<button class="danger" data-act="del" data-idx="'+idx+'">Smazat záznam</button></div></div>';});
+h+='<div class="btns" style="padding:14px"><button class="danger block" id="clearAll">Smazat celou historii</button></div></section>';
+box.innerHTML=h;
+}
+function reopenPanel(){
+const n=countChecked();
+if(n>=5){showPanel(n>=8?8:5);return;}
+const panel=document.getElementById("panel");
+panel.classList.remove("red");
+document.getElementById("panelTitle").textContent="Zatím v běžné míře";
+document.getElementById("panelBody").innerHTML="<p class='rec'>Nebyly zaznamenány žádné varovné signály. Když jich bude 5 nebo více, objeví se tady doporučení.</p>";
+panel.classList.add("show");
+}
+document.getElementById("panelClose").addEventListener("click",hidePanel);
+(function(){const bar=document.getElementById("statusbar");
+bar.addEventListener("click",reopenPanel);
+bar.addEventListener("keydown",function(e){if(e.key==="Enter"||e.key===" "){e.preventDefault();reopenPanel();}});})();
+document.addEventListener("click",function(e){
+const del=e.target.closest?e.target.closest('[data-act="del"]'):null;
+if(del&&del.dataset.idx!=null){if(window.confirm("Smazat tento záznam?")){const idx=+del.dataset.idx;const hist=lsGet(KEY_HIST,[]);hist.splice(idx,1);lsSet(KEY_HIST,hist);renderHistory();}return;}
+const tog=e.target.closest?e.target.closest('[data-act="toggle"]'):null;
+if(tog){const it=tog.closest(".rec-item");if(it)it.classList.toggle("open");return;}
+if(e.target&&e.target.id==="clearAll"){if(window.confirm("Smazat celou historii? Tuto akci nelze vrátit.")){lsDel(KEY_HIST);renderHistory();}}
+});
+render();
+renderHistory();
+</script>
+</body>
+</html>
